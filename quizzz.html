@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Sinh Học - Trả Lời Ngắn (Giải chi tiết)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #eef2f5;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        }
+        .header-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .progress-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #34495e;
+        }
+        .question-box {
+            background-color: #f9fbfd;
+            border: 1px solid #dce4ec;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            font-size: 1.15rem;
+            line-height: 1.6;
+        }
+        .question-title {
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 10px;
+            font-size: 1.25rem;
+        }
+        .question-box img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            display: block;
+        }
+        
+        /* CỤM 4 Ô ĐIỀN SỐ */
+        .answer-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .answer-area h3 {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        .boxes-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        .num-box {
+            width: 60px;
+            height: 70px;
+            font-size: 2rem;
+            text-align: center;
+            font-weight: bold;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            color: #2c3e50;
+            transition: all 0.2s;
+            background-color: #fff;
+        }
+        .num-box:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
+        }
+        .boxes-container.checked .num-box {
+            pointer-events: none; /* Khóa ô nhập sau khi chấm */
+        }
+        .num-box.correct { border-color: #2ecc71; background-color: #eafaf1; color: #27ae60; }
+        .num-box.incorrect { border-color: #e74c3c; background-color: #fdedec; color: #c0392b; }
+
+        /* Vùng phản hồi kết quả trực tiếp */
+        .live-feedback {
+            font-size: 1.1rem;
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+            text-align: center;
+        }
+        .feedback-correct { background-color: #eafaf1; border: 1px solid #2ecc71; }
+        .feedback-incorrect { background-color: #fdedec; border: 1px solid #e74c3c; }
+        
+        .feedback-title {
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+        }
+        .text-green { color: #27ae60; }
+        .text-red { color: #c0392b; }
+        
+        .explanation {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            display: inline-block;
+            text-align: left;
+            margin-top: 10px;
+            border: 1px dashed #bdc3c7;
+        }
+
+        .enter-hint {
+            display: block;
+            font-size: 0.95rem;
+            color: #e67e22;
+            font-weight: bold;
+            margin-top: 12px;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-btn {
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 250px;
+        }
+        .btn-check { background-color: #2ecc71; }
+        .btn-check:hover { background-color: #27ae60; }
+        .btn-next { background-color: #3498db; display: none; }
+        .btn-next:hover { background-color: #2980b9; }
+
+        /* Màn hình kết quả cuối cùng */
+        #result-screen { display: none; text-align: center; padding: 20px; }
+        .final-score { font-size: 4rem; color: #27ae60; font-weight: bold; margin: 15px 0; }
+        .btn-retry {
+            margin-top: 30px; padding: 15px 30px; background-color: #8e44ad; color: white;
+            border: none; border-radius: 8px; font-size: 1.2rem; cursor: pointer; font-weight: bold;
+        }
+        .btn-retry:hover { background-color: #732d91; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="quiz-screen">
+        <div class="header-info">
+            <div class="progress-text" id="progress-text">Câu: 1 / 9</div>
+            <div style="color: #e74c3c; font-weight: bold;">Điền số (Bấm Enter)</div>
+        </div>
+
+        <div class="question-box">
+            <div class="question-title" id="q-title">Câu 3</div>
+            <div id="q-content">Đang tải nội dung...</div>
+        </div>
+
+        <div class="answer-area">
+            <h3>ĐIỀN ĐÁP ÁN VÀO BÊN DƯỚI (1 Ô 1 SỐ)</h3>
+            <div class="boxes-container" id="boxes-wrapper">
+                <input type="text" class="num-box" maxlength="1" oninput="moveToNext(this, 0)" onkeydown="handleKey(event, 0)">
+                <input type="text" class="num-box" maxlength="1" oninput="moveToNext(this, 1)" onkeydown="handleKey(event, 1)">
+                <input type="text" class="num-box" maxlength="1" oninput="moveToNext(this, 2)" onkeydown="handleKey(event, 2)">
+                <input type="text" class="num-box" maxlength="1" oninput="moveToNext(this, 3)" onkeydown="handleKey(event, 3)">
+            </div>
+            
+            <div class="live-feedback" id="live-feedback">
+                <div class="feedback-title" id="feedback-title"></div>
+                <div class="explanation" id="feedback-explanation"></div>
+                <div class="enter-hint">👉 Bấm ENTER để qua câu tiếp theo</div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button class="nav-btn btn-check" id="btn-check" onclick="checkCurrentAnswer()">KIỂM TRA (Enter)</button>
+            <button class="nav-btn btn-next" id="btn-next" onclick="goNext()">CÂU TIẾP THEO (Enter)</button>
+        </div>
+    </div>
+
+    <div id="result-screen">
+        <h2>🎉 HOÀN THÀNH BÀI TẬP 🎉</h2>
+        <p style="font-size: 1.2rem; color: #7f8c8d;">Tổng số câu trả lời đúng:</p>
+        <div class="final-score"><span id="final-score">0</span> / 9</div>
+        <button class="btn-retry" onclick="location.reload()">&#8635; LÀM LẠI TỪ ĐẦU</button>
+    </div>
+</div>
+
+<script>
+    // DATA CHUẨN XÁC DỰA TRÊN 100% ẢNH BÔI ĐỎ CỦA BẠN
+    const questions = [
+        {
+            title: "Câu 3.",
+            content: "Cho các dữ liệu sau:<br>(1) Sinh vật bằng đá được tìm thấy trong lòng đất.<br>(2) Xác của các Pharaon trong kim tự tháp Ai Cập vẫn còn bảo quản tương đối nguyên vẹn.<br>(3) Xác sâu bọ được phủ kín trong nhựa hổ phách còn giữ nguyên màu sắc.<br>(4) Xác của voi mamut còn tươi trong lớp băng hà.<br>(5) Rìu bằng đá của người cổ đại.<br>Có bao nhiêu dữ liệu được gọi là hóa thạch?<br>A. 2 &nbsp;&nbsp;&nbsp;&nbsp; B. 3 &nbsp;&nbsp;&nbsp;&nbsp; C. 4 &nbsp;&nbsp;&nbsp;&nbsp; D. 5",
+            answer: 2, // Theo ảnh: 3, 4 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Các ý ĐÚNG:</b> (3), (4)</span><br><span style='color:#c0392b'><b>Các ý SAI:</b> (1), (2), (5)</span>"
+        },
+        {
+            title: "Câu 5.",
+            content: "Cho các loại bằng chứng sau đây:<br>(1) Bằng chứng giải phẫu so sánh<br>(2) Bằng chứng địa lí sinh học.<br>(3) Bằng chứng hóa thạch<br>(4) Bằng chứng hóa sinh<br>(5) Bằng chứng tế bào<br>(6) Bằng chứng sinh học phân tử.<br>Có bao nhiêu bằng chứng được coi là bằng chứng tiến hóa trực tiếp?<br>A. 1 &nbsp;&nbsp;&nbsp;&nbsp; B. 5 &nbsp;&nbsp;&nbsp;&nbsp; C. 0 &nbsp;&nbsp;&nbsp;&nbsp; D. 3",
+            answer: 1, // Theo ảnh: 3 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Chỉ có ý ĐÚNG là:</b> (3) Bằng chứng hóa thạch</span><br>Các bằng chứng còn lại đều là gián tiếp."
+        },
+        {
+            title: "Câu 6.",
+            content: "Cho các dữ liệu sau:<br>(1) Sinh vật bằng đá được tìm thấy trong lòng đất.<br>(2) Xác của các Pharaon trong kim tự tháp Ai Cập vẫn còn bảo quản tương đối nguyên vẹn.<br>(3) Xác sâu bọ được phủ kín trong nhựa hổ phách còn giữ nguyên màu sắc.<br>(4) Xác của voi mamut còn tươi trong lớp băng hà.<br>(5) Rìu bằng đá của người cổ đại.<br>Có bao nhiêu dữ liệu KHÔNG được gọi là hóa thạch?<br>A. 2 &nbsp;&nbsp;&nbsp;&nbsp; B. 3 &nbsp;&nbsp;&nbsp;&nbsp; C. 4 &nbsp;&nbsp;&nbsp;&nbsp; D. 5",
+            answer: 3, // Theo ảnh: 1, 2, 5 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Không phải hóa thạch gồm 3 ý:</b> (1), (2), (5)</span><br><span style='color:#c0392b'><b>Là hóa thạch gồm:</b> (3), (4)</span>"
+        },
+        {
+            title: "Câu 13.",
+            content: "Trong các nội dung sau đây, có bao nhiêu nhận định là bằng chứng tiến hóa phân tử chứng minh nguồn gốc chung của các loài:<br>1- DNA của các loài khác nhau thì khác nhau ở nhiều đặc điểm.<br>2- Nucleic acid của các loài sinh vật đều được cấu tạo từ 4 loại nucleotide.<br>3- Protein của các loài đều được cấu tạo từ khoảng 20 loại amino acid.<br>4- Mọi loài sinh vật đều được cấu tạo từ tế bào.<br>5- Mã di truyền dùng chung cho đa số các loài sinh vật.<br>A. 4 &nbsp;&nbsp;&nbsp;&nbsp; B. 5 &nbsp;&nbsp;&nbsp;&nbsp; C. 3 &nbsp;&nbsp;&nbsp;&nbsp; D. 2",
+            answer: 3, // Theo ảnh: 2, 3, 5 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Các ý ĐÚNG:</b> 2, 3, 5</span><br><span style='color:#c0392b'><b>Các ý SAI:</b> 1 (không chứng minh chung nguồn gốc), 4 (thuộc bằng chứng tế bào học)</span>"
+        },
+        {
+            title: "Câu 22.",
+            content: "<img src='cau22.png' alt='Bảng sai khác amino acid'><br>Tỉ lệ % các amino acid sai khác nhau ở chuỗi polypeptide anpha trong phân tử hemoglobin. Có các nhận định về bảng trên:<br>1. Bảng trên là bằng chứng sinh học phân tử.<br>2. Trong các loài đã cho, loài có quan hệ họ hàng gần nhất với loài người là cá voi.<br>3. Người có quan hệ gần với cá chép hơn kì nhông.<br>4. Cá chép có quan hệ gần với chó hơn kì nhông.<br>5. Cá voi có quan hệ gần với người hơn kì nhông.<br>6. Chó có quan hệ gần với cá chép hơn cá voi.<br>7. Cá Rồng có quan hệ gần với cá chép hơn cá voi.<br>8. Bằng chứng phôi sinh học so sánh được phản ánh qua bảng trên đã chứng tỏ nguồn gốc thống nhất của các loài.<br>9. Bảng trên giúp ta nhận thấy rằng sự khác nhau về trình tự amino acid trong chuỗi polypeptide càng nhỏ thì các loài có quan hệ họ hàng càng gần.<br>Có bao nhiêu nhận định đúng?<br>A. 2 &nbsp;&nbsp;&nbsp;&nbsp; B. 3 &nbsp;&nbsp;&nbsp;&nbsp; C. 4 &nbsp;&nbsp;&nbsp;&nbsp; D. 6",
+            answer: 6, // Theo ảnh: 1, 4, 5, 6, 7, 9 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Các ý ĐÚNG (6 ý):</b> 1, 4, 5, 6, 7, 9</span><br><span style='color:#c0392b'><b>Các ý SAI:</b> 2, 3, 8</span><br><i>*Mẹo: Tỉ lệ sai khác (%) càng nhỏ thì họ hàng càng gần.</i>"
+        },
+        {
+            title: "Câu 61.",
+            content: "Lai cải bắp với cải củ, được con lai thường bất thụ. Theo lí thuyết, để tạo con lai hữu thụ thường dùng bao nhiêu biện pháp trong số những biện pháp sau:<br>(1) Tạo cây cải củ và cải bắp tứ bội (4n) bằng conxisin, rồi cho chúng giao phấn với nhau.<br>(2) Nuôi cấy hạt phấn hoặc noãn của loài cây này trong ống nghiệm rồi cho phát triển thành cây, sau đó cho giao phấn với nhau.<br>(3) Xử lý trực tiếp hạt lai bất thụ với conxisin để thu được hạt dị đa bội rồi cho nảy mầm thành cây.<br>(4) Nuôi cấy mô của cây lai bất thụ rồi xử lý 5BU để tạo cây dị đa bội phát triển thành cây.<br>Số phát biểu đúng là:<br>A. 3 &nbsp;&nbsp;&nbsp;&nbsp; B. 2 &nbsp;&nbsp;&nbsp;&nbsp; C. 1 &nbsp;&nbsp;&nbsp;&nbsp; D. 4",
+            answer: 2, // Theo ảnh: 1, 3 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Các ý ĐÚNG:</b> (1), (3)</span><br>Cả hai biện pháp này đều dùng hóa chất Colchicine (conxisin) để gây đa bội hóa tạo thể song nhị bội hữu thụ."
+        },
+        {
+            title: "Câu 62.",
+            content: "Ba loài thực vật có quan hệ họ hàng gần gũi kí hiệu là loài A, loài B và loài C. Bộ NST của loài A là 2n = 24, của loài B là 2n = 26 và của loài C là 2n = 24. Các cây lai giữa loài A và loài B được đa bội hỏa tạo ra loài D. Các cây lai giữa loài C vả loài D được đa bội hỏa tạo ra loại E. Theo lí thuyết, bộ NST của loài E có bao nhiêu NST<br>A. 50 &nbsp;&nbsp;&nbsp;&nbsp; B. 86 &nbsp;&nbsp;&nbsp;&nbsp; C. 74 &nbsp;&nbsp;&nbsp;&nbsp; D. 62",
+            answer: 74, // Theo ảnh: C. 74 bôi đỏ
+            explanation: "<b>Giải nhanh:</b><br>- Loài D (Song nhị bội A & B) = 2nA + 2nB = 24 + 26 = 50<br>- Loài E (Song nhị bội C & D) = 2nC + 2nD = 24 + 50 = <span style='color:#e74c3c; font-weight:bold;'>74</span>"
+        },
+        {
+            title: "Câu 65.",
+            content: "Cho các ví dụ:<br>(1) Các cá thể của quần thể này có giao phối với cá thể của quần thể kia nhưng không hình thành hợp tử.<br>(2) Hai quần thể sinh sản vào hai mùa khác nhau.<br>(3) Các cá thể của quần thể này có giao phối với cá thể của quần thể kia nhưng phôi bị chết trước khi sinh.<br>(4) Các cá thể giao phối với nhau và sinh con nhưng con không sinh sản hữu tính.<br>(5) Các cá thể có tập tính giao phối khác nhau nên mặc dù ở trong một môi trường nhung bị cách li sinh sản.<br>Sau đây là các ví dụ về cách li sau hợp tử:<br>A. 1, 2, 3, 5. &nbsp;&nbsp;&nbsp;&nbsp; B. 2, 3, 4. &nbsp;&nbsp;&nbsp;&nbsp; C. 1, 3, 4. &nbsp;&nbsp;&nbsp;&nbsp; D. 3, 4.",
+            answer: 2, // Theo ảnh: D. 3, 4 bôi đỏ
+            explanation: "<span style='color:#27ae60'><b>Cách li SAU hợp tử:</b> (3), (4)</span><br><i>(Sau hợp tử là đã thụ tinh tạo thành hợp tử rồi nhưng phôi chết hoặc con lai bị vô sinh)</i><br><span style='color:#c0392b'><b>Cách li TRƯỚC hợp tử:</b> (1), (2), (5)</span>"
+        },
+        {
+            title: "Câu 68.",
+            content: "Dựa trên các số liệu giải phẫu và phân tích trình tự DNA, người ta đã xây dựng được cây tiến hóa phản ánh mối quan hệ họ hàng giữa các loài như hình sau:<br><img src='cau68.png' alt='Sơ đồ cây tiến hóa'><br>Cho các phát biểu sau:<br>(1) Thú có họ hàng gần gũi với lưỡng cư hơn là với cá phổi.<br>(2) Thằn lằn có họ hàng gần gũi với chim hơn là với thú.<br>(3) Thú có họ hàng gần gũi với lưỡng cư hơn là với chim.<br>(4) Cá sấu có họ hàng gần gũi với chim hơn là với thằn lằn và rắn.<br>(5) Cá sấu có họ hàng gần gũi với chim hơn so với đà điểu.<br>Có bao nhiêu phát biểu đúng?<br>A. 2 &nbsp;&nbsp;&nbsp;&nbsp; B. 3 &nbsp;&nbsp;&nbsp;&nbsp; C. 4 &nbsp;&nbsp;&nbsp;&nbsp; D. 5",
+            answer: 3, // Theo ảnh: B. 3 bôi đỏ (Ý 1, 2, 4)
+            explanation: "<span style='color:#27ae60'><b>Các ý ĐÚNG (3 ý):</b> (1), (2), (4)</span><br><span style='color:#c0392b'><b>Các ý SAI:</b> (3) Thú gần chim hơn lưỡng cư; (5) Cá sấu có họ hàng bằng nhau với chim và đà điểu (vì đà điểu cũng là chim).</span>"
+        }
+    ];
+
+    let current = 0;
+    let totalScore = 0;
+    let isChecked = false;
+
+    const qTitle = document.getElementById('q-title');
+    const qContent = document.getElementById('q-content');
+    const progressText = document.getElementById('progress-text');
+    const boxes = document.querySelectorAll('.num-box');
+    const boxesWrapper = document.getElementById('boxes-wrapper');
+    const liveFeedback = document.getElementById('live-feedback');
+    const feedbackTitle = document.getElementById('feedback-title');
+    const feedbackExplanation = document.getElementById('feedback-explanation');
+    const btnCheck = document.getElementById('btn-check');
+    const btnNext = document.getElementById('btn-next');
+
+    function loadQuestion() {
+        isChecked = false;
+        qTitle.innerText = questions[current].title;
+        qContent.innerHTML = questions[current].content;
+        progressText.innerText = `Câu: ${current + 1} / ${questions.length}`;
+
+        // Reset
+        boxesWrapper.classList.remove('checked');
+        liveFeedback.style.display = 'none';
+        btnCheck.style.display = 'block';
+        btnNext.style.display = 'none';
+
+        for (let i = 0; i < 4; i++) {
+            boxes[i].value = "";
+            boxes[i].className = "num-box";
+        }
+        
+        boxes[0].focus();
+    }
+
+    function moveToNext(input, index) {
+        input.value = input.value.replace(/[^0-9\-]/g, '');
+        if (input.value.length === 1 && index < 3) {
+            boxes[index + 1].focus();
+        }
+    }
+
+    function handleKey(event, index) {
+        if (event.key === "Backspace" && boxes[index].value === "" && index > 0) {
+            boxes[index - 1].focus();
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+
+            if (document.getElementById('result-screen').style.display === 'block') {
+                return;
+            }
+
+            if (!isChecked) {
+                checkCurrentAnswer(); 
+            } else {
+                goNext(); 
+            }
+        }
+    });
+
+    function getUserInput() {
+        let str = "";
+        for(let i=0; i<4; i++) {
+            str += boxes[i].value;
+        }
+        return parseInt(str.trim(), 10);
+    }
+
+    function checkCurrentAnswer() {
+        if (isChecked) return;
+        
+        let parsedUserAns = getUserInput();
+        let correctAns = questions[current].answer;
+        let isCorrect = (parsedUserAns === correctAns);
+
+        boxesWrapper.classList.add('checked');
+        
+        for(let i=0; i<4; i++) {
+            if (boxes[i].value !== "") {
+                boxes[i].classList.add(isCorrect ? 'correct' : 'incorrect');
+            }
+        }
+
+        // Hiện feedback và lời giải chi tiết
+        liveFeedback.style.display = 'block';
+        liveFeedback.className = isCorrect ? 'live-feedback feedback-correct' : 'live-feedback feedback-incorrect';
+        
+        if (isCorrect) {
+            totalScore++;
+            feedbackTitle.innerHTML = "<span class='text-green'>✓ Chính xác!</span>";
+        } else {
+            let displayAns = isNaN(parsedUserAns) ? "(Trống)" : parsedUserAns;
+            feedbackTitle.innerHTML = `<span class='text-red'>✗ Sai rồi! Bạn điền: ${displayAns} - Đáp án đúng: ${correctAns}</span>`;
+        }
+        
+        // Đổ lời giải vào
+        feedbackExplanation.innerHTML = questions[current].explanation;
+
+        btnCheck.style.display = 'none';
+        btnNext.style.display = 'block';
+        
+        if (current === questions.length - 1) {
+            btnNext.innerText = "NỘP BÀI (Enter)";
+        }
+
+        isChecked = true;
+    }
+
+    function goNext() {
+        if (current === questions.length - 1) {
+            submitQuiz();
+        } else {
+            current++;
+            loadQuestion();
+        }
+    }
+
+    function submitQuiz() {
+        document.getElementById('quiz-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block';
+        document.getElementById('final-score').innerText = totalScore;
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
